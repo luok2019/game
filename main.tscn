@@ -1,12 +1,33 @@
-[gd_scene load_steps=3 format=3 uid="uid://cvnbh151vaku4"]
+[gd_scene load_steps=4 format=3 uid="uid://cvnbh151vaku4"]
 
 [ext_resource type="PackedScene" uid="uid://b1ea2st0cyjbb" path="res://player.tscn" id="1_7e6y4"]
-[ext_resource type="PackedScene" uid="uid://damuybk25dgvs" path="res://enemy.tscn" id="2_7jm6h"]
+[ext_resource type="Script" path="res://main.gd" id="1_416nt"]
+[ext_resource type="Script" path="res://enemy_spawner.gd" id="2_aoiye"]
 
 [node name="Main" type="Node2D"]
+script = ExtResource("1_416nt")
 
 [node name="Player" parent="." instance=ExtResource("1_7e6y4")]
 position = Vector2(640, 600)
 
-[node name="Enemy" parent="." instance=ExtResource("2_7jm6h")]
+[node name="EnemySpawner" type="Node2D" parent="."]
+visible = false
 position = Vector2(900, 600)
+script = ExtResource("2_aoiye")
+
+[node name="Timer" type="Timer" parent="EnemySpawner"]
+wait_time = 3.0
+autostart = true
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="KillCountLabel" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 70.0
+offset_bottom = 43.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 24
+text = "击杀: 0"

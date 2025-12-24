@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://b1ea2st0cyjbb"]
+[gd_scene load_steps=6 format=3 uid="uid://b1ea2st0cyjbb"]
 
 [ext_resource type="Script" path="res://player.gd" id="1_x3lw5"]
 
@@ -7,6 +7,12 @@ size = Vector2(60, 90)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_edjbu"]
 size = Vector2(80, 60)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jav1t"]
+bg_color = Color(0.156863, 0.156863, 0.156863, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_71ion"]
+bg_color = Color(0, 0.784314, 0, 1)
 
 [node name="Player" type="CharacterBody2D" groups=["player"]]
 collision_mask = 3
@@ -29,3 +35,14 @@ collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
 shape = SubResource("RectangleShape2D_edjbu")
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+custom_minimum_size = Vector2(64, 10)
+offset_left = -32.0
+offset_top = -80.0
+offset_right = 32.0
+offset_bottom = -53.0
+theme_override_styles/background = SubResource("StyleBoxFlat_jav1t")
+theme_override_styles/fill = SubResource("StyleBoxFlat_71ion")
+step = 1.0
+value = 100.0
