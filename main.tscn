@@ -46,3 +46,4 @@ theme_override_font_sizes/font_size = 24
 text = "攻击力: 20"
 
 [node name="Inventory" parent="UI" instance=ExtResource("3_inventory")]
+visible = false
