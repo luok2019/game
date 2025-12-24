@@ -1,0 +1,81 @@
+[gd_scene load_steps=2 format=3 uid="uid://ctkr7pteqtklw"]
+
+[ext_resource type="Script" path="res://inventory.gd" id="1_0j8qn"]
+
+[node name="Inventory" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_0j8qn")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.7)
+
+[node name="MainPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -250.0
+offset_right = 200.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleLabel" type="Label" parent="MainPanel"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 310.0
+offset_bottom = 34.0
+theme_override_font_sizes/font_size = 20
+text = "背包 (%d/%d) (按I关闭)"
+
+[node name="ItemGrid" type="GridContainer" parent="MainPanel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 50.0
+offset_right = 380.0
+offset_bottom = 290.0
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 3
+
+[node name="DetailPanel" type="Panel" parent="MainPanel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 310.0
+offset_right = 380.0
+offset_bottom = 460.0
+
+[node name="DetailLabel" type="Label" parent="MainPanel/DetailPanel"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 350.0
+offset_bottom = 105.0
+text = "选择装备查看详情"
+autowrap_mode = 3
+
+[node name="EquipButton" type="Button" parent="MainPanel/DetailPanel"]
+visible = false
+layout_mode = 0
+offset_left = 10.0
+offset_top = 110.0
+offset_right = 110.0
+offset_bottom = 140.0
+text = "装备"

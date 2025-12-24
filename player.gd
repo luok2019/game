@@ -361,7 +361,7 @@ func spawn_damage_number(damage_value):
 	# 自动清理，不需要手动管理
 
 
-# ============ 拾取系统（Day 5 新增）============
+# ============ 拾取系统（Day 5 新增，Day 6 改造）============
 
 func pickup_item(item_data: Dictionary) -> void:
 	# 【接口方法】由掉落物（DroppedItem）调用
@@ -374,16 +374,28 @@ func pickup_item(item_data: Dictionary) -> void:
 	print("拾取: ", ItemData.get_full_name(item_data))
 	# 【输出示例】"拾取: 稀有 铁剑"
 
-	# 根据装备类型进行分类处理
-	if item_data["type"] == "weapon":
-		# 如果是武器，调用装备武器方法
-		equip_weapon(item_data)
-	elif item_data["type"] == "armor":
-		# 如果是防具，调用装备防具方法
-		equip_armor(item_data)
+	# ============ Day 6 新增：尝试添加到背包 ============
+	# 获取背包节点
+	var inventory = get_tree().root.get_node("Main/UI/Inventory")
+	if inventory:
+		# 尝试添加到背包
+		var success = inventory.add_item(item_data)
+		if not success:
+			# 背包满了，显示提示
+			print("背包已满，无法拾取！")
+			# TODO: 可以在屏幕上显示提示
+			return
 
-	# 重新计算角色属性（攻击力、血量等）
-	recalculate_stats()
+	# 添加成功，装备已经在背包中了
+	# Day 5的直接装备逻辑已移除，改为通过背包界面装备
+	# 玩家需要按I键打开背包，手动选择装备
+
+	# ============ 以下是Day 5的旧逻辑（已注释）============
+	# if item_data["type"] == "weapon":
+	# 	equip_weapon(item_data)
+	# elif item_data["type"] == "armor":
+	# 	equip_armor(item_data)
+	# recalculate_stats()
 
 
 func equip_weapon(item_data: Dictionary) -> void:
