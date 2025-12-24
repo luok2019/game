@@ -27,26 +27,60 @@ var damage_number_scene = preload("res://damage_number.tscn")
 var speed = 200
 # 每秒移动200像素的速度
 
-var attack_power = 100  # 新增：攻击力
-# 【设计决策】初始攻击力20
+# 攻击力系统（Day 5 改造）
+var base_attack = 100  # 基础攻击力（固定值）
+# 【设计决策】初始基础攻击力20
 # 敌人初始血量50（Step 2.3会设置）
 # 3次攻击击杀（20*3=60>50）
-# 后续装备可以提升到50-100
 
-var attack_cooldown = 0.0  # 新增：攻击冷却计时器
+var attack_power = 20  # 当前攻击力（基础+装备加成）
+# 【Day 5 新增】attack_power 是最终攻击力
+# 由 base_attack + equipment_bonus["attack"] 计算得出
+# 拾取装备后会自动更新
+# 【重要】初始值必须等于 base_attack（没有装备时）
+
+var attack_cooldown = 0.0  # 攻击冷却计时器
 # 【概念⭐】冷却机制：
 # - 攻击后设置为0.5秒
 # - 每帧减少delta
 # - 小于0时才能再次攻击
 # 【为什么需要冷却】防止按住空格连续攻击（手感不好）
 
-# 新增：生命值
+# 生命值系统（Day 5 改造）
 var hp = 100
-var max_hp = 100
+var base_max_hp = 100  # 基础最大血量（固定值）
+var max_hp = 100  # 当前最大血量（基础+装备加成）
+# 【Day 5 新增】max_hp 是最终最大血量
+# 由 base_max_hp + equipment_bonus["hp"] 计算得出
+# 拾取装备后会自动更新
+
 # 【设计决策】初始血量100
 # 敌人攻击力10（Step 3.3会设置）
 # 10次攻击死亡
 # 后续装备可以提升到200-300
+
+# ============ 装备系统（Day 5 新增）============
+
+# 装备栏：存储当前装备的物品数据
+var equipped_weapon: Dictionary = {}  # 当前装备的武器数据
+# 【数据结构】Dictionary 类型，存储装备的完整信息
+# 例如：{"type": "weapon", "name": "铁剑", "rarity": 1, "stats": {"attack": 15}}
+
+var equipped_armor: Dictionary = {}  # 当前装备的防具数据
+# 【数据结构】同上，例如：{"type": "armor", "name": "布衣", "rarity": 0, "stats": {"hp": 30}}
+
+# 装备加成统计：累计所有装备提供的属性加成
+var equipment_bonus: Dictionary = {
+	"attack": 0,  # 装备提供的攻击力加成
+	"hp": 0       # 装备提供的生命值加成
+}
+# 【计算公式】
+# attack_power = base_attack + equipment_bonus["attack"]
+# max_hp = base_max_hp + equipment_bonus["hp"]
+#
+# 【为什么分开存储】
+# 1. equipped_*：存储完整物品数据（用于显示、保存等）
+# 2. equipment_bonus：只存储数值加成（用于快速计算）
 
 
 # ============ 节点引用 ============
@@ -70,8 +104,13 @@ var max_hp = 100
 
 # ============ 初始化 ============
 
-func _ready():
-	update_hp_bar()  # 初始化血条显示
+func _ready() -> void:
+	# 【Day 5 新增】初始化角色属性
+	# 确保 attack_power 和 max_hp 正确计算
+	recalculate_stats()
+
+	# 初始化血条显示
+	update_hp_bar()
 
 
 
@@ -320,3 +359,132 @@ func spawn_damage_number(damage_value):
 	# 【生命周期】
 	# DamageNumber 会在动画结束后调用 queue_free()
 	# 自动清理，不需要手动管理
+
+
+# ============ 拾取系统（Day 5 新增）============
+
+func pickup_item(item_data: Dictionary) -> void:
+	# 【接口方法】由掉落物（DroppedItem）调用
+	# 当玩家靠近掉落物时，掉落物会调用此方法
+	#
+	# 参数：item_data - 包含装备信息的字典
+	# 格式示例：{"type": "weapon", "name": "铁剑", "rarity": 1, "stats": {"attack": 15}}
+
+	# 在控制台显示拾取信息
+	print("拾取: ", ItemData.get_full_name(item_data))
+	# 【输出示例】"拾取: 稀有 铁剑"
+
+	# 根据装备类型进行分类处理
+	if item_data["type"] == "weapon":
+		# 如果是武器，调用装备武器方法
+		equip_weapon(item_data)
+	elif item_data["type"] == "armor":
+		# 如果是防具，调用装备防具方法
+		equip_armor(item_data)
+
+	# 重新计算角色属性（攻击力、血量等）
+	recalculate_stats()
+
+
+func equip_weapon(item_data: Dictionary) -> void:
+	# 【方法职责】装备武器并更新攻击力加成
+	#
+	# 参数：item_data - 武器装备数据字典
+	# 【数据示例】{"type": "weapon", "name": "铁剑", "rarity": 1, "stats": {"attack": 15}}
+
+	# 保存武器数据到装备栏
+	equipped_weapon = item_data
+	# 【注意】这会覆盖之前的武器（Day 5 简化版本）
+	# Day 6 会添加背包系统，旧装备会放入背包
+
+	# 从装备数据中获取攻击力加成
+	# get("attack", 0) 表示：如果有 "attack" 键就返回其值，否则返回 0
+	equipment_bonus["attack"] = item_data["stats"].get("attack", 0)
+	# 【示例】
+	# 稀有铁剑：stats = {"attack": 15} → equipment_bonus["attack"] = 15
+	# 普通铁剑：stats = {"attack": 10} → equipment_bonus["attack"] = 10
+
+	# 在控制台显示装备信息
+	print("装备武器: ", ItemData.get_full_name(item_data), " 攻击+", equipment_bonus["attack"])
+	# 【输出示例】"装备武器: 稀有 铁剑 攻击+15"
+
+
+func equip_armor(item_data: Dictionary) -> void:
+	# 【方法职责】装备防具并更新生命值加成
+	#
+	# 参数：item_data - 防具装备数据字典
+	# 【数据示例】{"type": "armor", "name": "布衣", "rarity": 0, "stats": {"hp": 30}}
+
+	# 保存防具数据到装备栏
+	equipped_armor = item_data
+	# 【注意】这会覆盖之前的防具（Day 5 简化版本）
+
+	# 从装备数据中获取生命值加成
+	equipment_bonus["hp"] = item_data["stats"].get("hp", 0)
+	# 【示例】
+	# 优秀布衣：stats = {"hp": 39} → equipment_bonus["hp"] = 39
+	# 普通布衣：stats = {"hp": 30} → equipment_bonus["hp"] = 30
+
+	# 在控制台显示装备信息
+	print("装备防具: ", ItemData.get_full_name(item_data), " 生命+", equipment_bonus["hp"])
+	# 【输出示例】"装备防具: 优秀 布衣 生命+39"
+
+
+func recalculate_stats() -> void:
+	# 【核心方法】重新计算所有角色属性
+	#
+	# 调用时机：
+	# 1. 拾取新装备时
+	# 2. 装备/卸下装备时（Day 6）
+	# 3. 其他可能影响属性的事件
+	#
+	# 【计算流程】
+	# 1. 基础属性 + 装备加成 = 最终属性
+	# 2. 更新 UI 显示
+	# 3. 同步血量百分比
+
+	# 计算攻击力：基础值 + 装备加成
+	attack_power = base_attack + equipment_bonus["attack"]
+	# 【计算示例】
+	# base_attack = 20, equipment_bonus["attack"] = 15
+	# attack_power = 20 + 15 = 35
+
+	# 保存旧的最大血量（用于计算百分比）
+	var old_max_hp: float = max_hp
+
+	# 计算新的最大血量：基础值 + 装备加成
+	max_hp = base_max_hp + equipment_bonus["hp"]
+	# 【计算示例】
+	# base_max_hp = 100, equipment_bonus["hp"] = 30
+	# max_hp = 100 + 30 = 130
+
+	# 如果最大血量增加了，按比例增加当前血量
+	if max_hp > old_max_hp:
+		# 计算当前血量百分比
+		var hp_percent: float = float(hp) / old_max_hp
+		# 【数学示例】
+		# hp = 50, old_max_hp = 100 → 50/100 = 0.5 (50%)
+		# 新的 max_hp = 130
+		# 新的 hp = 130 * 0.5 = 65
+		#
+		# 【设计意图】
+		# 玩家拾取装备后，血量百分比保持不变
+		# 如果之前是半血，拾取后还是半血（但数值增加了）
+
+		# 根据百分比计算新的当前血量
+		hp = int(max_hp * hp_percent)
+
+	# 更新血条 UI
+	update_hp_bar()
+
+	# 【Day 5 扩展】通知 Main 更新攻击力显示
+	# 获取 Main 节点（场景树的根节点）
+	var main_node = get_tree().root.get_node("Main")
+	# 检查 Main 节点是否存在且有 update_player_stats 方法
+	if main_node and main_node.has_method("update_player_stats"):
+		main_node.update_player_stats()
+		# 【调用效果】Main 会更新屏幕左上角的攻击力显示
+
+	# 在控制台输出完整的属性信息
+	print("属性更新 - 攻击:", attack_power, " 血量:", hp, "/", max_hp)
+	# 【输出示例】"属性更新 - 攻击: 35 血量: 65/130"

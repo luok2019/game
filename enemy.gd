@@ -1,6 +1,8 @@
 extends CharacterBody2D
 
 # ============ 场景预加载（Day 3 新增）============
+var dropped_item_scene = preload("res://dropped_item.tscn")  # 新增
+
 
 var damage_number_scene = preload("res://damage_number.tscn")
 # 【概念⭐】preload vs load
@@ -213,6 +215,9 @@ func die():
 	# get_node("Main")：找到Main节点
 	# add_kill()：调用Main的方法
 
+	# 新增：掉落装备
+	drop_item()
+
 
 	queue_free()  # 删除自己
 	# 【概念⭐】queue_free() vs free()
@@ -365,3 +370,59 @@ func spawn_damage_number(damage_value):
 	# 【生命周期】
 	# DamageNumber 会在动画结束后调用 queue_free()
 	# 自动清理，不需要手动管理
+	
+	
+	# 新增方法
+func drop_item() -> void:
+	# 【Day 5 优化】改为100%掉落（测试用）
+	# if randf() > 0.8:
+	# 	return  # 20%什么都不掉
+	#
+	# 【原版掉落概率】（正式发布时可恢复）
+	# randf() > 0.8 表示 20% 概率不掉落
+	# 即 80% 概率掉落装备
+	#
+	# 【为什么临时改为100%】
+	# - Day 5 是测试装备系统
+	# - 需要频繁拾取装备验证功能
+	# - 100% 掉落让测试更方便
+	# - 正式发布时可以改回 80%
+
+	# 生成随机装备数据
+	var item = ItemData.generate_random_item()
+	# 【调用】ItemData 是全局类（class_name）
+	# generate_random_item() 会随机生成：
+	# - 类型（武器/防具）
+	# - 品质（普通/优秀/稀有/史诗）
+	# - 属性（攻击力/生命值）
+
+	# 创建掉落物实例
+	var dropped = dropped_item_scene.instantiate()
+	# 【概念】instantiate() 从预加载场景创建实例
+	# dropped_item_scene 在文件顶部已预加载
+
+	# 设置装备数据
+	dropped.set_item_data(item)
+	# 【接口调用】掉落物会根据装备数据设置颜色
+	# - 普通：白色
+	# - 优秀：绿色
+	# - 稀有：蓝色
+	# - 史诗：紫色
+
+	# 设置位置（在敌人死亡位置）
+	dropped.position = position
+	# 【位置说明】使用敌人的死亡坐标
+	# 掉落物会从敌人尸体处出现
+
+	# 添加到场景树
+	get_parent().add_child(dropped)
+	# 【添加到父节点】Main 场景
+	# 这样掉落物独立于敌人存在
+	# 敌人删除后，掉落物仍然存在
+
+	# 在控制台输出掉落信息
+	print("掉落: ", ItemData.get_full_name(item))
+	# 【输出示例】
+	# "掉落: 普通 铁剑"
+	# "掉落: 稀有 钢剑"
+	# "掉落: 史诗 精钢剑"
