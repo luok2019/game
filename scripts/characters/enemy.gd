@@ -40,27 +40,38 @@ func _ready() -> void:
 
 func _physics_process(delta):
 	"""敌人AI：追击玩家并攻击"""
-	if player and hp > 0:
-		var distance_to_player = global_position.distance_to(player.global_position)
+	# 检查节点是否有效且在场景树中
+	if not is_inside_tree():
+		return
 
-		# 攻击冷却倒计时
-		if attack_cooldown > 0:
-			attack_cooldown -= delta
+	# 如果玩家不存在或已死亡，停止处理
+	if not player or not is_instance_valid(player):
+		return
 
-		# 判断是否在攻击范围内
-		if distance_to_player <= attack_range:
-			# 在攻击范围内，停止移动
-			velocity = Vector2.ZERO
+	if hp <= 0:
+		return
 
-			# 如果冷却完成，执行攻击
-			if attack_cooldown <= 0:
-				do_attack()
-		else:
-			# 不在攻击范围内，追击玩家
-			var direction = (player.global_position - global_position).normalized()
-			velocity = direction * speed
+	var distance_to_player = global_position.distance_to(player.global_position)
 
-		# 应用移动
+	# 攻击冷却倒计时
+	if attack_cooldown > 0:
+		attack_cooldown -= delta
+
+	# 判断是否在攻击范围内
+	if distance_to_player <= attack_range:
+		# 在攻击范围内，停止移动
+		velocity = Vector2.ZERO
+
+		# 如果冷却完成，执行攻击
+		if attack_cooldown <= 0:
+			do_attack()
+	else:
+		# 不在攻击范围内，追击玩家
+		var direction = (player.global_position - global_position).normalized()
+		velocity = direction * speed
+
+	# 应用移动（使用 try-catch 防止场景切换时崩溃）
+	if is_inside_tree():
 		move_and_slide()
 
 # ============ 攻击系统 ============
@@ -91,6 +102,9 @@ func on_take_damage() -> void:
 func die() -> void:
 	"""敌人死亡：增加击杀数并掉落装备"""
 	print("敌人死亡！")
+
+	# 禁用物理处理，防止 _physics_process 继续执行
+	set_physics_process(false)
 
 	# 播放死亡音效
 	get_node("/root/AudioManager").play_sound("death")

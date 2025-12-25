@@ -1,0 +1,58 @@
+[gd_scene load_steps=6 format=3 uid="uid://b_battle_zone_001"]
+
+[ext_resource type="PackedScene" uid="uid://b1ea2st0cyjbb" path="res://scenes/characters/player.tscn" id="1_7e6y4"]
+[ext_resource type="Script" path="res://scripts/ui/battle_zone.gd" id="1_battle_zone"]
+[ext_resource type="Script" path="res://scripts/systems/enemy_spawner.gd" id="2_aoiye"]
+[ext_resource type="PackedScene" uid="uid://ctkr7pteqtklw" path="res://scenes/ui/inventory.tscn" id="3_inventory"]
+[ext_resource type="PackedScene" uid="uid://b7s428f68vpxb" path="res://scenes/objects/portal.tscn" id="4_portal"]
+
+[node name="BattleZone" type="Node2D"]
+script = ExtResource("1_battle_zone")
+
+[node name="Player" parent="." instance=ExtResource("1_7e6y4")]
+position = Vector2(640, 600)
+
+[node name="EnemySpawner" type="Node2D" parent="."]
+visible = false
+position = Vector2(900, 600)
+script = ExtResource("2_aoiye")
+
+[node name="Timer" type="Timer" parent="EnemySpawner"]
+wait_time = 3.0
+autostart = true
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+
+[node name="PortalToSafe" parent="." instance=ExtResource("4_portal")]
+position = Vector2(200, 600)
+target_scene = "res://scenes/safe_zone.tscn"
+portal_name = "返回安全区"
+
+[node name="UI" type="CanvasLayer" parent="."]
+process_mode = 3
+
+[node name="KillCountLabel" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 70.0
+offset_bottom = 43.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 24
+text = "击杀: 0"
+
+[node name="AttackLabel" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 50.0
+offset_right = 95.0
+offset_bottom = 73.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 24
+text = "攻击力: 20"
+
+[node name="Inventory" parent="UI" instance=ExtResource("3_inventory")]
+visible = false

@@ -11,13 +11,14 @@ config_version=5
 [application]
 
 config/name="CardLegend"
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/safe_zone.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
-AudioManager="res://scripts/systems/audio_manager.gd"
+AudioManager="*res://scripts/systems/audio_manager.gd"
+GameData="*res://scripts/autoload/game_data.gd"
 
 [display]
 

@@ -129,19 +129,28 @@ func on_take_damage() -> void:
 	get_node("/root/AudioManager").play_sound("hit")
 
 	# 触发相机震动（Day 7 新增）
-	var main = get_tree().root.get_node("Main")
-	if main and main.has_method("shake_camera"):
-		main.shake_camera(3.0, 0.15)
+	# 获取当前场景（兼容 safe_zone 和 battle_zone）
+	var current_scene = get_tree().current_scene
+	if current_scene and current_scene.has_method("shake_camera"):
+		current_scene.shake_camera(3.0, 0.15)
 
 # 只重写 die()，因为玩家死亡有特殊处理
 func die() -> void:
-	"""玩家死亡：重新开始游戏"""
+	"""玩家死亡：重置数据并返回安全区"""
 	print("玩家死亡！")
+
+	# 禁用处理，防止在场景切换期间继续执行
+	set_physics_process(false)
+	set_process(false)
 
 	# 播放死亡音效
 	get_node("/root/AudioManager").play_sound("death")
 
-	get_tree().reload_current_scene()
+	# 重置全局数据（包括背包装备）
+	GameData.reset_game()
+
+	# 返回安全区
+	get_tree().change_scene_to_file("res://scenes/safe_zone.tscn")
 
 # ============ 拾取系统（Day 5 新增，Day 6 改造）============
 
@@ -149,8 +158,12 @@ func pickup_item(item_data: Dictionary) -> void:
 	"""拾取装备并添加到背包"""
 	print("拾取: ", ItemData.get_full_name(item_data))
 
-	# 获取背包节点
-	var inventory = get_tree().root.get_node("Main/UI/Inventory")
+	# 获取背包节点（兼容 safe_zone 和 battle_zone）
+	var current_scene = get_tree().current_scene
+	var inventory = null
+	if current_scene:
+		inventory = current_scene.get_node_or_null("UI/Inventory")
+
 	if inventory:
 		# 尝试添加到背包
 		var success = inventory.add_item(item_data)
@@ -158,6 +171,8 @@ func pickup_item(item_data: Dictionary) -> void:
 			# 背包满了，显示提示
 			print("背包已满，无法拾取！")
 			return
+	else:
+		print("警告：当前场景没有背包 UI")
 
 
 func equip_weapon(item_data: Dictionary) -> void:
@@ -193,9 +208,9 @@ func recalculate_stats() -> void:
 	# 更新血条 UI
 	update_hp_bar()
 
-	# 通知 Main 更新攻击力显示
-	var main_node = get_tree().root.get_node("Main")
-	if main_node and main_node.has_method("update_player_stats"):
-		main_node.update_player_stats()
+	# 通知当前场景更新攻击力显示（兼容 safe_zone 和 battle_zone）
+	var current_scene = get_tree().current_scene
+	if current_scene and current_scene.has_method("update_player_stats"):
+		current_scene.update_player_stats()
 
 	print("属性更新 - 攻击:", attack_power, " 血量:", hp, "/", max_hp)

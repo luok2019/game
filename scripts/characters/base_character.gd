@@ -89,7 +89,8 @@ func flash_red() -> void:
 
 	# 0.1秒后恢复正常颜色
 	await get_tree().create_timer(0.1).timeout
-	if is_instance_valid(self):
+	# 检查节点是否仍然有效且在场景树中
+	if is_instance_valid(self) and is_inside_tree():
 		modulate = Color(1, 1, 1)  # 白色（正常）
 
 
