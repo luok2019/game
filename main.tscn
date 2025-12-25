@@ -20,6 +20,9 @@ script = ExtResource("2_aoiye")
 wait_time = 3.0
 autostart = true
 
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+
 [node name="UI" type="CanvasLayer" parent="."]
 process_mode = 3
 

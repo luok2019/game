@@ -45,6 +45,12 @@ var spawn_offset_x = 400  # 敌人在玩家右侧的偏移距离（像素）
 # - 玩家向右推进，敌人从右边迎面而来
 # - 这是经典横板ARPG的设计（如《死亡细胞》、《恶魔城》）
 
+# ============ 难度系统（Day 7 新增）============
+
+var time_elapsed = 0.0  # 游戏运行时间
+var difficulty_level = 1  # 当前难度等级
+# 【难度递增】每30秒提升一次难度
+
 # ============ 引用 ============
 
 @onready var timer = $Timer
@@ -76,6 +82,18 @@ func _ready():
 	# 3. 调用_on_timer_timeout()函数
 	# 4. 生成敌人
 	# 5. Timer自动重新开始计时（如果One Shot = Off）
+
+# ============ 难度系统（Day 7 新增）============
+
+func _process(delta: float) -> void:
+	"""每帧更新：检测难度提升"""
+	time_elapsed += delta
+
+	# 每30秒提升一次难度
+	var new_difficulty = int(time_elapsed / 30.0) + 1
+	if new_difficulty > difficulty_level:
+		difficulty_level = new_difficulty
+		increase_difficulty()
 
 # ============ 生成逻辑 ============
 
@@ -109,6 +127,17 @@ func spawn_enemy():
 	# enemy_scene 是模具
 	# instantiate() 是用模具生产产品
 	# 每次生产的产品都是独立的
+
+	# 【Day 7 新增】根据难度强化敌人
+	if difficulty_level > 1:
+		# 计算强化倍数：每级增加20%血量，15%攻击力
+		var hp_multiplier = 1.0 + (difficulty_level - 1) * 0.2
+		var atk_multiplier = 1.0 + (difficulty_level - 1) * 0.15
+
+		# 应用强化（转换为整数避免浮点问题）
+		enemy.hp = int(enemy.hp * hp_multiplier)
+		enemy.max_hp = enemy.hp
+		enemy.attack_power = int(enemy.attack_power * atk_multiplier)
 
 	# 计算生成位置（玩家右侧屏幕外）
 	var spawn_pos = player.global_position
@@ -153,7 +182,7 @@ func spawn_enemy():
 	# └─ Enemy (新生成的) ← 平级，独立存在
 
 	# 调试输出
-	print("生成敌人于: ", spawn_pos)
+	print("生成敌人于: ", spawn_pos, " 难度等级: ", difficulty_level)
 	# 【开发提示】后续可以删除
 	# - 用于验证生成位置是否正确
 	# - 确认敌人在玩家右侧
@@ -200,20 +229,20 @@ func get_weighted_random_enemy():
 	# 默认返回第一个（不应该到这里）
 	return enemy_scenes[0]
 
-# ============ 调整难度（可选，未来扩展）============
 
-#func increase_difficulty():
-	# 【预留接口】随时间增加难度
-	# 可以在游戏运行时调用这个函数
-	#
-	# 未来可以实现：
-	# - 减少生成间隔（更频繁生成）
-	# - spawn_interval = max(1.0, spawn_interval - 0.2)
-	# - timer.wait_time = spawn_interval
-	#
-	# - 增加敌人属性（更强）
-	# - 可以生成更多强力敌人
-	#
-	# - 随着击杀数增加难度
-	# - if kill_count > 10:
-	# -     increase_difficulty()
+# ============ 难度提升系统（Day 7 新增）============
+
+func increase_difficulty() -> void:
+	"""
+	【内部方法】提升游戏难度
+	每30秒自动调用一次
+	"""
+	# 缩短生成间隔（最低1.5秒）
+	spawn_interval = max(1.5, spawn_interval - 0.2)
+	timer.wait_time = spawn_interval
+
+	# 增加强力敌人比例（难度等级3以上）
+	if difficulty_level >= 3:
+		enemy_weights = [50, 50]  # 50%普通，50%强力
+
+	print("难度提升到 ", difficulty_level, " 级！生成间隔: ", spawn_interval, "秒")

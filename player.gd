@@ -128,6 +128,11 @@ func on_take_damage() -> void:
 	"""玩家受击时播放音效"""
 	get_node("/root/AudioManager").play_sound("hit")
 
+	# 触发相机震动（Day 7 新增）
+	var main = get_tree().root.get_node("Main")
+	if main and main.has_method("shake_camera"):
+		main.shake_camera(3.0, 0.15)
+
 # 只重写 die()，因为玩家死亡有特殊处理
 func die() -> void:
 	"""玩家死亡：重新开始游戏"""

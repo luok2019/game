@@ -31,6 +31,11 @@ var kill_count = 0  # 击杀数
 # player.max_hp        → 获取最大血量
 # player.hp            → 获取当前血量
 
+@onready var camera = $Camera2D
+# 【Day 7 新增】相机节点引用
+# 【用途】实现震屏效果
+# 【为什么需要】玩家受击时触发相机震动，增强打击感
+
 # ============ 初始化 ============
 
 func _ready() -> void:
@@ -129,3 +134,41 @@ func update_player_stats() -> void:
 	#     attack_label.text = "攻击力: " + str(player.attack_power)
 	#     hp_label.text = "血量: " + str(player.hp) + "/" + str(player.max_hp)
 	#     defense_label.text = "防御: " + str(player.defense)
+
+
+# ============ 相机震动系统（Day 7 新增）============
+
+func shake_camera(intensity: float = 5.0, duration: float = 0.2) -> void:
+	"""
+	【公共方法】触发相机震动效果
+
+	参数：
+		intensity - 震动强度（像素偏移量），默认5.0
+		duration - 震动持续时间（秒），默认0.2
+
+	使用示例：
+		shake_camera(3.0, 0.15)  # 轻微震动
+		shake_camera(10.0, 0.3)  # 强烈震动
+	"""
+	# 安全检查：确保相机存在
+	if not camera:
+		return
+
+	# 保存原始偏移量
+	var original_offset = camera.offset
+	var shake_timer = 0.0
+
+	# 震动循环
+	while shake_timer < duration:
+		# 生成随机偏移
+		camera.offset = original_offset + Vector2(
+			randf_range(-intensity, intensity),
+			randf_range(-intensity, intensity)
+		)
+		# 累计时间
+		shake_timer += get_process_delta_time()
+		# 等待下一帧
+		await get_tree().process_frame
+
+	# 恢复原始偏移
+	camera.offset = original_offset
