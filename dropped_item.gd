@@ -27,16 +27,16 @@ func _ready():
 
 func _on_body_entered(body):
 	# 【信号回调】当有Body进入Area时触发
-	
+
 	# 检查是不是玩家
 	if body.is_in_group("player"):
+		# 新增：播放拾取音效
+		get_node("/root/AudioManager").play_sound("pickup")
+
 		# 调用玩家的拾取方法
 		if body.has_method("pickup_item"):
 			body.pickup_item(item_data)
-			
-			# 播放拾取音效（可选）
-			# $PickupSound.play()
-			
+
 			# 删除掉落物
 			queue_free()
 

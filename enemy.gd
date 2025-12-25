@@ -82,10 +82,18 @@ func do_attack():
 # 删除：update_hp_bar()（使用基类的）
 # 删除：spawn_damage_number()（使用基类的）
 
+# 重写音效钩子
+func on_take_damage() -> void:
+	"""敌人受击时播放音效"""
+	get_node("/root/AudioManager").play_sound("hit")
+
 # 重写 die()，因为敌人死亡有掉落
 func die() -> void:
 	"""敌人死亡：增加击杀数并掉落装备"""
 	print("敌人死亡！")
+
+	# 播放死亡音效
+	get_node("/root/AudioManager").play_sound("death")
 
 	# 通知Main增加击杀数
 	var main = get_tree().root.get_node("Main")

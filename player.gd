@@ -102,6 +102,9 @@ func do_attack():
 	# 设置冷却时间
 	attack_cooldown = 0.5  # 0.5秒冷却
 
+	# 新增：播放攻击音效
+	get_node("/root/AudioManager").play_sound("attack")
+
 	print("攻击！")  # 调试输出
 
 	# 获取攻击范围内的所有物体
@@ -120,10 +123,19 @@ func do_attack():
 # 删除：spawn_damage_number()（使用基类的）
 # 删除：flash_red()（使用基类的）
 
+# 重写音效钩子
+func on_take_damage() -> void:
+	"""玩家受击时播放音效"""
+	get_node("/root/AudioManager").play_sound("hit")
+
 # 只重写 die()，因为玩家死亡有特殊处理
 func die() -> void:
 	"""玩家死亡：重新开始游戏"""
 	print("玩家死亡！")
+
+	# 播放死亡音效
+	get_node("/root/AudioManager").play_sound("death")
+
 	get_tree().reload_current_scene()
 
 # ============ 拾取系统（Day 5 新增，Day 6 改造）============

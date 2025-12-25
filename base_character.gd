@@ -1,10 +1,9 @@
 extends CharacterBody2D
+class_name BaseCharacter
 
 # ============ 基础角色类 ============
 # 功能：Player 和 Enemy 的共同功能
 # Day 7 新增：代码重构，消除重复代码
-
-class_name BaseCharacter
 # 让其他脚本可以继承这个类
 # 使用方式：extends BaseCharacter
 
@@ -50,6 +49,9 @@ func take_damage(damage: int) -> void:
 
 	# 受击闪红效果
 	flash_red()
+
+	# 调用钩子（子类重写）
+	on_take_damage()
 
 	# 检查死亡
 	if hp <= 0:
@@ -98,4 +100,19 @@ func die() -> void:
 	例如：玩家重新开始，敌人掉落装备
 	"""
 	print("角色死亡")
+
+	# 调用钩子（子类重写）
+	on_die()
+
 	queue_free()
+
+
+# ============ 音效钩子（子类可选实现）============
+
+func on_take_damage() -> void:
+	"""受击时的钩子，子类可重写播放音效"""
+	pass
+
+func on_die() -> void:
+	"""死亡时的钩子，子类可重写播放音效"""
+	pass
