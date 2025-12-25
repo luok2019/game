@@ -6,10 +6,10 @@ extends Node
 
 # ============ 音效预加载 ============
 
-var sound_attack = preload("res://sounds/sword_swing.wav")
-var sound_hit = preload("res://sounds/hit.wav")
-var sound_pickup = preload("res://sounds/pickup.wav")
-var sound_death = preload("res://sounds/death.wav")
+var sound_attack = preload("res://assets/sounds/sword_swing.wav")
+var sound_hit = preload("res://assets/sounds/hit.wav")
+var sound_pickup = preload("res://assets/sounds/pickup.wav")
+var sound_death = preload("res://assets/sounds/death.wav")
 
 # ============ 音效播放器池 ============
 

@@ -3,9 +3,9 @@ extends Node2D
 # ============ 敌人场景（多种）============
 
 var enemy_scenes = [
-	preload("res://enemy.tscn"),        # 普通敌人
-	preload("res://enemy_strong.tscn")  # 强力敌人
-	# preload("res://enemy_fast.tscn")  # 快速敌人（如果创建了）
+	preload("res://scenes/characters/enemy.tscn"),        # 普通敌人
+	preload("res://scenes/characters/enemy_strong.tscn")  # 强力敌人
+	# preload("res://scenes/characters/enemy_fast.tscn")  # 快速敌人（如果创建了）
 ]
 # 【Day 4.3 新增】多种敌人类型
 # - 数组存储多个敌人场景

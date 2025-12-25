@@ -3,7 +3,7 @@ extends BaseCharacter  # 改为继承 BaseCharacter
 # ============ 场景预加载 ============
 
 # 删除：var damage_number_scene（已在基类中）
-var dropped_item_scene = preload("res://dropped_item.tscn")
+var dropped_item_scene = preload("res://scenes/items/dropped_item.tscn")
 
 # ============ 敌人属性 ============
 

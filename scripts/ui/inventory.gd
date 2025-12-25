@@ -7,7 +7,7 @@ extends Control
 # ============ 背包设置 ============
 
 const MAX_SLOTS = 9  # 背包最大格子数（3行3列）
-var item_slot_scene = preload("res://item_slot.tscn")  # 预加载格子场景
+var item_slot_scene = preload("res://scenes/items/item_slot.tscn")  # 预加载格子场景
 
 # ============ 背包数据 ============
 

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://doe2r2wh2dcn8"]
 
-[ext_resource type="Script" path="res://damage_number.gd" id="1_m1ybg"]
+[ext_resource type="Script" path="res://scripts/ui/damage_number.gd" id="1_m1ybg"]
 
 [node name="Label" type="Label"]
 offset_right = 50.0

@@ -9,7 +9,7 @@ class_name BaseCharacter
 
 # ============ 场景预加载 ============
 
-var damage_number_scene = preload("res://damage_number.tscn")
+var damage_number_scene = preload("res://scenes/ui/damage_number.tscn")
 
 # ============ 基础属性 ============
 
