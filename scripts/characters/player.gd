@@ -9,6 +9,11 @@ extends BaseCharacter  # 改为继承 BaseCharacter
 var speed = 200
 # 每秒移动200像素的速度
 
+var facing_right: bool = true
+# Day 9 新增：角色朝向
+# true: 面向右
+# false: 面向左
+
 # 攻击力系统（Day 5 改造）
 var base_attack = 100  # 基础攻击力（固定值）
 # 【设计决策】初始基础攻击力100
@@ -42,6 +47,7 @@ var equipment_bonus: Dictionary = {
 # ============ 节点引用 ============
 
 @onready var attack_area = $AttackArea
+@onready var animated_sprite = $AnimatedSprite2D  # Day 9 新增
 # 删除：@onready var hp_bar（已在基类中）
 
 # ============ 初始化 ============
@@ -57,42 +63,76 @@ func _ready() -> void:
 	recalculate_stats()
 	update_hp_bar()
 
+	# Day 9 新增：播放待机动画（添加安全检查）
+	# 只有在动画资源已创建时才播放，避免报错
+	if animated_sprite and animated_sprite.sprite_frames:
+		# 调整 idle 动画的帧偏移，使 standing 帧 (433x577) 与 walk 帧 (500x500) 视觉对齐
+		# standing 帧内容中心约在 (220, 298)，walk 帧约在 (250-262, 256-258)
+		# 需要向右偏移约 30-40 像素来对齐
+		animated_sprite.set_frame_and_progress(0, 0.0)
+		animated_sprite.offset = Vector2(35, 0)  # 向右偏移 35 像素对齐
+		animated_sprite.play("idle")
+
 # ============ 游戏主循环 ============
 
 func _physics_process(delta):
 	# _physics_process在固定的物理帧率下调用（默认60次/秒）
 	# 适合处理物理相关的逻辑，如移动、碰撞等
 
-	# 获取输入方向
+	# ============ 获取移动输入 ============
 	var direction = Input.get_axis("ui_left", "ui_right")
 	# get_axis返回值：
-	# - 按A键(或左箭头)：-1.0
-	# - 按D键(或右箭头)：1.0
-	# - 同时按或不按：0.0
+	# → -1.0（按A键，向左）
+	# → 0.0（不按键）
+	# → 1.0（按D键，向右）
 
-	# 根据输入设置速度
+	# ============ 更新角色朝向 ============
+	if direction != 0 and animated_sprite:
+		# 有移动输入时更新朝向
+		facing_right = direction > 0
+
+		# 应用精灵翻转
+		# flip_h = true: 水平翻转（面向左）
+		# flip_h = false: 正常显示（面向右）
+		animated_sprite.flip_h = not facing_right
+
+	# ============ 计算移动速度 ============
 	if direction:
-		# 如果有输入
 		velocity.x = direction * speed
-		# 例如：按D键时，direction=1, velocity.x=200（向右）
-		# 按A键时，direction=-1, velocity.x=-200（向左）
 	else:
-		# 如果没有输入
 		velocity.x = 0
-		# 立即停止（没有惯性）
 
-	# 应用移动
+	# ============ 播放对应动画 ============
+	# 添加安全检查：只有在动画资源已创建时才播放
+	if animated_sprite and animated_sprite.sprite_frames:
+		if direction != 0:
+			# 移动中，播放 walk 动画
+			# 避免打断攻击动画
+			if animated_sprite.animation != "attack":
+				animated_sprite.play("walk")
+				# walk 动画不需要偏移（帧都是500x500）
+				animated_sprite.offset = Vector2(0, 0)
+		else:
+			# 待机，播放 idle 动画
+			# 避免打断攻击动画
+			if animated_sprite.animation != "attack":
+				animated_sprite.play("idle")
+				# idle 动画使用 standing 帧，需要偏移来对齐
+				# standing 帧 (433x577) 内容中心在220，walk 帧 (500x500) 在250-262
+				animated_sprite.offset = Vector2(35, 0)
+
+	# ============ 应用物理移动 ============
 	move_and_slide()
 	# CharacterBody2D的内置方法：
 	# 1. 根据velocity移动角色
 	# 2. 自动处理碰撞
 	# 3. 内部已经乘了delta，所以我们不需要乘
 
-	# -------- 攻击冷却倒计时 --------
+	# ============ 攻击冷却倒计时 ============
 	if attack_cooldown > 0:
 		attack_cooldown -= delta
 
-	# -------- 检测攻击输入 --------
+	# ============ 检测攻击输入 ============
 	if Input.is_action_just_pressed("ui_accept") and attack_cooldown <= 0:
 		do_attack()
 

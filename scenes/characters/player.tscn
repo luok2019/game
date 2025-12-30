@@ -1,6 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://b1ea2st0cyjbb"]
+[gd_scene load_steps=7 format=3 uid="uid://b1ea2st0cyjbb"]
 
 [ext_resource type="Script" path="res://scripts/characters/player.gd" id="1_x3lw5"]
+[ext_resource type="SpriteFrames" path="res://scenes/characters/player_sprite_frames.tres" id="2_sprite_frames"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pinla"]
 size = Vector2(60, 90)
@@ -18,12 +19,11 @@ bg_color = Color(0, 0.784314, 0, 1)
 collision_mask = 3
 script = ExtResource("1_x3lw5")
 
-[node name="ColorRect" type="ColorRect" parent="."]
-offset_left = -32.0
-offset_top = -48.0
-offset_right = 32.0
-offset_bottom = 48.0
-color = Color(0.105928, 0.165565, 1, 1)
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -8)
+scale = Vector2(0.2, 0.2)
+sprite_frames = ExtResource("2_sprite_frames")
+animation = &"idle"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_pinla")

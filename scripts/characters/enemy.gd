@@ -109,10 +109,10 @@ func die() -> void:
 	# 播放死亡音效
 	get_node("/root/AudioManager").play_sound("death")
 
-	# 通知Main增加击杀数
-	var main = get_tree().root.get_node("Main")
-	if main and main.has_method("add_kill"):
-		main.add_kill()
+	# 通知当前场景增加击杀数（兼容 main, safe_zone, battle_zone）
+	var current_scene = get_tree().current_scene
+	if current_scene and current_scene.has_method("add_kill"):
+		current_scene.add_kill()
 
 	# 掉落装备
 	drop_item()
