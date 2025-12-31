@@ -23,7 +23,7 @@ script = ExtResource("1_x3lw5")
 position = Vector2(0, -8)
 scale = Vector2(0.2, 0.2)
 sprite_frames = ExtResource("2_sprite_frames")
-animation = &"idle"
+animation = &"attack"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_pinla")

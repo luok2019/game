@@ -28,6 +28,17 @@ var attack_power = 100  # 当前攻击力（基础+装备加成）
 
 var attack_cooldown = 0.0  # 攻击冷却计时器
 
+# ============ Day 10 新增：攻击动画系统变量 ============
+var is_attacking: bool = false
+# 是否正在执行攻击动作
+# true时: 禁止移动、禁止再次攻击
+# false时: 允许正常活动
+
+var attack_hit_registered: bool = false
+# 防止同一次攻击重复判定伤害
+# 每次 attack 开始时重置为 false
+# 帧2判定后设为 true
+
 # 生命值系统（Day 5 改造）
 # 删除：var hp, max_hp（已在基类中）
 var base_max_hp = 100  # 基础最大血量（固定值）
@@ -66,69 +77,90 @@ func _ready() -> void:
 	# Day 9 新增：播放待机动画（添加安全检查）
 	# 只有在动画资源已创建时才播放，避免报错
 	if animated_sprite and animated_sprite.sprite_frames:
-		# idle 动画使用 standing 帧，正常缩放
-		# standing 帧和移动帧现在都是 384×512，尺寸一致
+		# Day 10: 连接动画信号
+		animated_sprite.frame_changed.connect(_on_animation_frame_changed)
+		animated_sprite.animation_finished.connect(_on_animation_finished)
+
+		# Day 9: 播放待机动画
 		animated_sprite.set_frame_and_progress(0, 0.0)
 		animated_sprite.scale = Vector2(0.2, 0.2)
 		animated_sprite.play("idle")
 
+		print("玩家初始化完成，动画信号已连接")
+
 # ============ 游戏主循环 ============
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	# _physics_process在固定的物理帧率下调用（默认60次/秒）
 	# 适合处理物理相关的逻辑，如移动、碰撞等
 
-	# ============ 获取移动输入 ============
-	var direction = Input.get_axis("ui_left", "ui_right")
-	# get_axis返回值：
-	# → -1.0（按A键，向左）
-	# → 0.0（不按键）
-	# → 1.0（按D键，向右）
+	# ============ Day 10 新增：攻击输入检测 ============
+	if Input.is_action_just_pressed("ui_accept"):
+		if not is_attacking:
+			# 只有非攻击状态才能发起新攻击
+			# 注意：这里不检查 attack_cooldown，冷却在动画结束时设置
+			start_attack()
 
-	# ============ 更新角色朝向 ============
-	if direction != 0 and animated_sprite:
-		# 有移动输入时更新朝向
-		facing_right = direction > 0
+	# ============ 移动逻辑（Day 9 已有，Day 10 修改）============
+	if not is_attacking:
+		# 只在非攻击状态允许移动
+		var direction = Input.get_axis("ui_left", "ui_right")
+		# get_axis返回值：
+		# → -1.0（按A键，向左）
+		# → 0.0（不按键）
+		# → 1.0（按D键，向右）
 
-		# 应用精灵翻转
-		# flip_h = true: 水平翻转（面向左）
-		# flip_h = false: 正常显示（面向右）
-		animated_sprite.flip_h = not facing_right
-
-	# ============ 计算移动速度 ============
-	if direction:
-		velocity.x = direction * speed
-	else:
-		velocity.x = 0
-
-	# ============ 播放对应动画 ============
-	# 添加安全检查：只有在动画资源已创建时才播放
-	if animated_sprite and animated_sprite.sprite_frames:
+		# 更新朝向和翻转（Day 9 已有）
 		if direction != 0:
-			# 移动中，播放 walk 动画
-			# 避免打断攻击动画
+			facing_right = direction > 0
+			animated_sprite.flip_h = not facing_right
+
+		# 计算速度（Day 9 已有）
+		if direction:
+			velocity.x = direction * speed
+			# 检查当前动画不是 attack 才切换
 			if animated_sprite.animation != "attack":
 				animated_sprite.play("walk")
 		else:
-			# 待机，播放 idle 动画
-			# 避免打断攻击动画
+			velocity.x = 0
 			if animated_sprite.animation != "attack":
 				animated_sprite.play("idle")
+	else:
+		# 攻击中停止移动（Day 10 新增）
+		velocity.x = 0
 
-	# ============ 应用物理移动 ============
+	# ============ 应用物理移动（Day 9 已有）============
 	move_and_slide()
 	# CharacterBody2D的内置方法：
 	# 1. 根据velocity移动角色
 	# 2. 自动处理碰撞
 	# 3. 内部已经乘了delta，所以我们不需要乘
 
-	# ============ 攻击冷却倒计时 ============
-	if attack_cooldown > 0:
-		attack_cooldown -= delta
+# ============ Day 10 新增：攻击动画系统方法 ============
 
-	# ============ 检测攻击输入 ============
-	if Input.is_action_just_pressed("ui_accept") and attack_cooldown <= 0:
-		do_attack()
+func start_attack() -> void:
+	"""
+	开始执行攻击动画（替换原有的 do_attack 瞬时判定）
+
+	职责:
+	1. 设置攻击状态
+	2. 重置判定标记
+	3. 播放攻击动画
+	4. 伤害判定在帧2通过信号触发
+	"""
+	# 设置攻击状态
+	is_attacking = true
+
+	# 重置判定标记
+	attack_hit_registered = false
+
+	# 播放攻击动画
+	animated_sprite.play("attack")
+
+	print("=== 攻击动画开始 ===")
+
+	# 播放攻击音效（保留 Day 1 代码）
+	get_node("/root/AudioManager").play_sound("attack")
 
 # ============ 攻击方法 ============
 
@@ -149,6 +181,115 @@ func do_attack():
 		if enemy.has_method("take_damage"):
 			# 如果这个物体有take_damage方法，就调用它
 			enemy.take_damage(attack_power)
+
+# ============ Day 10 新增：信号回调函数 ============
+
+func _on_animation_frame_changed() -> void:
+	"""
+	动画帧变化时调用 - 用于在帧2执行判定
+
+	触发时机:
+	- 帧0切换到帧1: 调用
+	- 帧1切换到帧2: 调用
+	- 帧2切换到帧3: 调用
+	"""
+	# ============ 只处理攻击动画 ============
+	if animated_sprite.animation != "attack":
+		# walk 和 idle 动画也会触发这个信号
+		# 但我们只想在攻击动画时执行判定
+		return
+
+	# ============ 只在第2帧 (frame = 1) 执行判定 ============
+	if animated_sprite.frame == 1:
+		# frame = 1 对应第2张图片（打击帧）
+
+		# ============ 防止重复判定 ============
+		if not attack_hit_registered:
+			# 本次攻击还没判定过，执行判定
+			perform_attack_hit_detection()
+
+			# 标记已判定，防止同一次攻击重复触发
+			attack_hit_registered = true
+
+			print("→ 执行帧2判定")
+
+func _on_animation_finished() -> void:
+	"""
+	动画播放完成时调用
+
+	职责:
+	1. 重置攻击状态
+	2. 回到待机动画
+	"""
+	# ============ 只处理攻击动画 ============
+	if animated_sprite.animation != "attack":
+		return
+
+	# ============ 重置攻击状态 ============
+	is_attacking = false
+	# → 解除攻击状态
+	# → 允许玩家移动
+	# → 允许发起新攻击
+
+	# ============ 重置攻击冷却 ============
+	attack_cooldown = 0.5  # 0.5秒冷却
+	# → Day 10新设计：冷却在攻击结束后开始计时
+	# → Day 1-8旧设计：冷却在攻击开始时立即计时
+	# → 影响：连续攻击间隔 = 攻击动画时长(0.38秒) + 冷却(0.5秒) = 0.88秒
+
+	attack_hit_registered = false
+	# → 为下次攻击做准备
+
+	# ============ 回到待机动画 ============
+	animated_sprite.play("idle")
+	# → 避免停留在攻击最后一帧
+
+	print("=== 攻击结束 ===")
+
+func perform_attack_hit_detection() -> void:
+	"""
+	执行攻击伤害判定
+
+	流程:
+	1. 临时启用攻击区域
+	2. 等待物理帧更新
+	3. 获取重叠的敌人列表
+	4. 遍历并造成伤害
+	5. 立即关闭攻击区域
+	"""
+	# ============ 第1步: 临时启用攻击区域 ============
+	attack_area.monitoring = true
+	# → 让 AttackArea 开始检测碰撞
+
+	# ============ 第2步: 等待物理帧更新 ============
+	await get_tree().physics_frame
+	# → 让 Godot 的物理引擎完成一次计算
+	# → 确保碰撞检测数据是最新的
+
+	# ============ 第3步: 获取重叠的敌人列表 ============
+	var bodies = attack_area.get_overlapping_bodies()
+	# → 返回当前与 AttackArea 重叠的所有 Body 节点
+	# → 可能包含: 敌人、墙壁、道具等
+
+	print("检测到物体数量:", bodies.size())
+
+	# ============ 第4步: 遍历并判断 ============
+	for body in bodies:
+		# ============ 检查是否是敌人 ============
+		# 方法1: 检查是否有 take_damage 方法（推荐）
+		if body.has_method("take_damage"):
+			# 有这个方法，八成是敌人
+			body.take_damage(attack_power)
+			print("  → 命中:", body.name)
+
+		# 方法2: 检查是否在 "enemies" 组中（备选）
+		# elif body.is_in_group("enemies"):
+		# 	body.take_damage(attack_power)
+
+	# ============ 第5步: 立即关闭攻击区域 ============
+	attack_area.monitoring = false
+	# → 判定完成，停止检测
+	# → 避免帧2持续时间内重复触发
 
 # ============ 受伤系统（重写基类方法）============
 
