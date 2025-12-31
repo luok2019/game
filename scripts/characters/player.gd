@@ -66,11 +66,10 @@ func _ready() -> void:
 	# Day 9 新增：播放待机动画（添加安全检查）
 	# 只有在动画资源已创建时才播放，避免报错
 	if animated_sprite and animated_sprite.sprite_frames:
-		# 调整 idle 动画的帧偏移，使 standing 帧 (433x577) 与 walk 帧 (500x500) 视觉对齐
-		# standing 帧内容中心约在 (220, 298)，walk 帧约在 (250-262, 256-258)
-		# 需要向右偏移约 30-40 像素来对齐
+		# idle 动画使用 standing 帧，正常缩放
+		# standing 帧和移动帧现在都是 384×512，尺寸一致
 		animated_sprite.set_frame_and_progress(0, 0.0)
-		animated_sprite.offset = Vector2(35, 0)  # 向右偏移 35 像素对齐
+		animated_sprite.scale = Vector2(0.2, 0.2)
 		animated_sprite.play("idle")
 
 # ============ 游戏主循环 ============
@@ -110,16 +109,11 @@ func _physics_process(delta):
 			# 避免打断攻击动画
 			if animated_sprite.animation != "attack":
 				animated_sprite.play("walk")
-				# walk 动画不需要偏移（帧都是500x500）
-				animated_sprite.offset = Vector2(0, 0)
 		else:
 			# 待机，播放 idle 动画
 			# 避免打断攻击动画
 			if animated_sprite.animation != "attack":
 				animated_sprite.play("idle")
-				# idle 动画使用 standing 帧，需要偏移来对齐
-				# standing 帧 (433x577) 内容中心在220，walk 帧 (500x500) 在250-262
-				animated_sprite.offset = Vector2(35, 0)
 
 	# ============ 应用物理移动 ============
 	move_and_slide()

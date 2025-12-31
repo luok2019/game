@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://b1ea2st0cyjbb"]
 
 [ext_resource type="Script" path="res://scripts/characters/player.gd" id="1_x3lw5"]
-[ext_resource type="SpriteFrames" path="res://scenes/characters/player_sprite_frames.tres" id="2_sprite_frames"]
+[ext_resource type="SpriteFrames" uid="uid://d08is2feif0kg" path="res://scenes/characters/player_sprite_frames.tres" id="2_sprite_frames"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pinla"]
 size = Vector2(60, 90)
@@ -37,11 +37,11 @@ collision_mask = 2
 shape = SubResource("RectangleShape2D_edjbu")
 
 [node name="ProgressBar" type="ProgressBar" parent="."]
-custom_minimum_size = Vector2(64, 10)
+custom_minimum_size = Vector2(70, 10)
 offset_left = -32.0
-offset_top = -80.0
-offset_right = 32.0
-offset_bottom = -53.0
+offset_top = -91.0
+offset_right = 38.0
+offset_bottom = -64.0
 theme_override_styles/background = SubResource("StyleBoxFlat_jav1t")
 theme_override_styles/fill = SubResource("StyleBoxFlat_71ion")
 step = 1.0

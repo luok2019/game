@@ -1,10 +1,10 @@
 [gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://d08is2feif0kg"]
 
 [ext_resource type="Texture2D" uid="uid://dsx8sujhq05t8" path="res://assets/images/move/standing_-removebg-preview.png" id="1_standing"]
-[ext_resource type="Texture2D" uid="uid://cogljja3c78wp" path="res://assets/images/move/frame_0001-removebg-preview.png" id="2_frame1"]
-[ext_resource type="Texture2D" uid="uid://biwnd01k8ipgc" path="res://assets/images/move/frame_0004-removebg-preview.png" id="3_frame4"]
-[ext_resource type="Texture2D" uid="uid://y56kfwviwqhu" path="res://assets/images/move/frame_0007-removebg-preview.png" id="4_frame7"]
-[ext_resource type="Texture2D" uid="uid://ddt4xk27gajiw" path="res://assets/images/move/frame_0008-removebg-preview.png" id="5_frame8"]
+[ext_resource type="Texture2D" uid="uid://t30l7pqrlb6o" path="res://assets/images/move/frame_0001-removebg-preview.png" id="2_frame1"]
+[ext_resource type="Texture2D" uid="uid://b85kn5g7d18si" path="res://assets/images/move/frame_0002-removebg-preview.png" id="3_frame2"]
+[ext_resource type="Texture2D" uid="uid://cnfocd3brmdpk" path="res://assets/images/move/frame_0003-removebg-preview.png" id="4_frame3"]
+[ext_resource type="Texture2D" uid="uid://d0ehdntdnos5k" path="res://assets/images/move/frame_0004-removebg-preview.png" id="5_frame4"]
 
 [resource]
 animations = [{
@@ -21,13 +21,13 @@ animations = [{
 "texture": ExtResource("2_frame1")
 }, {
 "duration": 1.0,
-"texture": ExtResource("3_frame4")
+"texture": ExtResource("3_frame2")
 }, {
 "duration": 1.0,
-"texture": ExtResource("4_frame7")
+"texture": ExtResource("4_frame3")
 }, {
 "duration": 1.0,
-"texture": ExtResource("5_frame8")
+"texture": ExtResource("5_frame4")
 }],
 "loop": true,
 "name": &"walk",
